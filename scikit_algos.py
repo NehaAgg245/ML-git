@@ -11,6 +11,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
 
 #Loading of dataset 
 header = ['Seq_Name','MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS']
@@ -83,10 +84,20 @@ def knn(score):
 
 #Bagging GridSearch
 def bagging(score):
+	tuned_parameters = [{'n_estimators': [10,15,5,25],
+	'max_samples':[0.5,0.2,1.0],
+	'max_features':[0.2,0.5,1],
+	'random_state':[0, None]}]
+	clf = GridSearchCV(BaggingClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Random Forest GridSearch 
 def random_forest(score):
+	tuned_parameters = [{'n_estimators': [5,10,25,50],
+	'criterion':['gini', 'entropy'],
+	'max_depth' : [1,3,5,7,10],
+	'max_features' : [4, 'sqrt', 'log2', None]}]
+	clf = GridSearchCV(RandomForestClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Adaboost GridSearch 
@@ -109,7 +120,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = knn(score)
+    clf = random_forest(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
