@@ -9,6 +9,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+
 #Loading of dataset 
 header = ['Seq_Name','MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS']
 yeast = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data', header = None, names = header, sep = '\s+', usecols = ['MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS'])
@@ -60,10 +63,22 @@ def naive_bayes(score):
 
 #Logistic Regression GridSearch
 def logistic_regression(score):
+	tuned_parameters = [{
+	'tol' : [1e-4,1e-3,1e-5],
+	'C': [1,0.5,1.5],
+	'solver':['newton-cg', 'lbfgs', 'saga', 'sag'],
+	'max_iter' : [5000],
+	'multi_class':['ovr', 'multinomial','auto']}]
+	clf = GridSearchCV(LogisticRegression(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #KNN GridSearch
 def knn(score):
+	tuned_parameters = [{'n_neighbors':[5,15,25,35],
+	'weights':['uniform', 'distance'],
+	'algorithm':['auto','ball_tree','kd_tree','brute'],
+	'p':[1,2,3,5]}]
+	clf = GridSearchCV(KNeighborsClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Bagging GridSearch
@@ -94,7 +109,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = naive_bayes(score)
+    clf = knn(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
