@@ -7,7 +7,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
-
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import GaussianNB
 #Loading of dataset 
 header = ['Seq_Name','MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS']
 yeast = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data', header = None, names = header, sep = '\s+', usecols = ['MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS'])
@@ -21,7 +22,7 @@ df["CLASS"] = df["CLASS"].cat.codes
 #Training and Test Data
 X = df.iloc[:, 0:7].values
 y = df.iloc[:, 7:8].values.ravel()
-X_train, X_test, y_train, y_test = train_test_split(X,y)
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.1, shuffle = True)
 scaler = StandardScaler()
 scaler.fit(X_train)
 X_train = scaler.transform(X_train)
@@ -38,14 +39,23 @@ def decision_tree(score):
 
 #Neural Net GridSearch
 def neural_net(score):
+	tuned_parameters = [{'hidden_layer_sizes':[(20,25),(10,20,30),(2,8)],
+	'activation':['identity','logistic','tanh','relu'],
+	'learning_rate':['constant', 'invscaling', 'adaptive'],
+	'learning_rate_init':[0.001,0.005,0.009],
+	'alpha':[0.0001,0.001,0.0005]}]
+	mlp = MLPClassifier(warm_start = True,  max_iter = 5000)
+	clf = GridSearchCV(mlp, tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Support Vector Machine GridSearch
 def svm(score):
 	return clf
 
-#Gaussian Naive Bayes GridSearch
+#Gaussian Naive Bayes GridSearch0.6,0.2,0.05,0.001,0.001,0.023,0.05,0.075
 def naive_bayes(score):
+	tuned_parameters = [{'priors':[0.6,0.2,0.05,0.001,0.001,0.023,0.05,0.075]}]
+	clf = GridSearchCV(GaussianNB(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Logistic Regression GridSearch
@@ -84,7 +94,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = decision_tree(score)
+    clf = naive_bayes(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
