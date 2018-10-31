@@ -11,7 +11,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier
 
 #Loading of dataset 
 header = ['Seq_Name','MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS']
@@ -102,6 +102,11 @@ def random_forest(score):
 
 #Adaboost GridSearch 
 def adaboost(score):
+	tuned_parameters = [{'n_estimators':[50, 100, 25, 200],
+	'learning_rate' : [1, 0.5, 1.5],
+	'algorithm' :['SAMME', 'SAMME.R'],
+	'random_state':[0, None]}]
+	clf = GridSearchCV(AdaBoostClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Gradient Boosting GridSearch 
@@ -120,7 +125,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = random_forest(score)
+    clf = adaboost(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
