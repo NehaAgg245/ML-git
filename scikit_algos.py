@@ -11,7 +11,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
 
 #Loading of dataset 
 header = ['Seq_Name','MCG','GVH','LIP','CHG','AAC','ALM1','ALM2', 'CLASS']
@@ -111,10 +112,21 @@ def adaboost(score):
 
 #Gradient Boosting GridSearch 
 def gradient_boosting(score):
+	tuned_parameters = [{'loss':['deviance'],
+	'learning_rate':[0.1,0.5,0.01,0.9,0.05],
+	'max_depth':[3,1,7,9],
+	'min_samples_split' :[2,5,10],
+	'max_features': [7, 'sqrt', 'log2']}]
+	clf = GridSearchCV(GradientBoostingClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #XGBoost GridSearch
 def xgboost(score):
+	tuned_parameters = [{'learning_rate':[0.1,0.5,0.01,0.9,0.05],
+	'n_estimators':[100,50,1000],
+	'booster':['gbtree','gblinear','dart'],
+	'max_delta_step':[0,1,5]}]
+	clf = GridSearchCV(XGBClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Calling the model
@@ -125,7 +137,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = adaboost(score)
+    clf = xgboost(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
