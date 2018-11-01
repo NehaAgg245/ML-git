@@ -8,6 +8,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
@@ -55,6 +56,12 @@ def neural_net(score):
 
 #Support Vector Machine GridSearch
 def svm(score):
+	tuned_parameters = [{'kernel':['linear','poly','rbf','sigmoid'],
+	'shrinking' :[True, False],
+	'gamma':[1e-3,1e-4,1e-2],
+	'C':[1,10,100],
+	'degree':[2,3,10]}]
+	clf = GridSearchCV(SVC(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
 #Gaussian Naive Bayes GridSearch0.6,0.2,0.05,0.001,0.001,0.023,0.05,0.075
@@ -123,7 +130,7 @@ def gradient_boosting(score):
 #XGBoost GridSearch
 def xgboost(score):
 	tuned_parameters = [{'learning_rate':[0.1,0.5,0.01,0.9,0.05],
-	'n_estimators':[100,50,1000],
+	'n_estimators':[100,50,200],
 	'booster':['gbtree','gblinear','dart'],
 	'max_delta_step':[0,1,5]}]
 	clf = GridSearchCV(XGBClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
@@ -136,8 +143,32 @@ model = input("Enter the model name (Consult readme file): ")
 for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
+    if model.lower() == 'decision tree':
+    	clf = decision_tree(score)
+    elif model.lower() == 'neural network':
+    	clf = neural_net(score)
+    elif model.lower() == 'svm':
+    	clf = svm(score)
+    elif model.lower() == 'naive bayes':
+    	clf = naive_bayes(score)
+    elif model.lower() == 'logistic regression':
+    	clf = logistic_regression(score)
+    elif model.lower() == 'knn':
+    	clf = knn(score)
+    elif model.lower() == 'random forest':
+    	clf = random_forest(score)
+    elif model.lower() == 'bagging':
+    	clf = bagging(score)
+    elif model.lower() == 'adaboost':
+    	clf = adaboost(score)
+    elif model.lower() == 'gradient boosting':
+    	clf = gradient_boosting(score)
+    elif model.lower() == 'xgboost':
+    	clf = xgboost(score)
+    else:
+    	print("No model found")
+    	sys.exit()
 
-    clf = xgboost(score)
     clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set for " + model + " : ")
