@@ -66,7 +66,7 @@ def svm(score):
 
 #Gaussian Naive Bayes GridSearch0.6,0.2,0.05,0.001,0.001,0.023,0.05,0.075
 def naive_bayes(score):
-	tuned_parameters = [{'priors':[0.6,0.2,0.05,0.001,0.001,0.023,0.05,0.075]}]
+	tuned_parameters = [{'priors':[None]}]
 	clf = GridSearchCV(GaussianNB(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
 
@@ -93,8 +93,8 @@ def knn(score):
 #Bagging GridSearch
 def bagging(score):
 	tuned_parameters = [{'n_estimators': [10,15,5,25],
-	'max_samples':[0.5,0.2,1.0],
-	'max_features':[0.2,0.5,1],
+	'max_samples':[0.5,0.2,1.0, 2],
+	'max_features':[0.2,0.5,1, 2],
 	'random_state':[0, None]}]
 	clf = GridSearchCV(BaggingClassifier(), tuned_parameters, cv = 5, scoring = '%s' % score)
 	return clf
